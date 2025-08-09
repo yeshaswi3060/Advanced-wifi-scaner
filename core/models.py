@@ -10,7 +10,7 @@ class Setting(Base):
     key = Column(String, unique=True, index=True)
     value = Column(String, nullable=True)
 
-    def __init__(self, key=None, value=None):
+    def __init__(self, key=None, value=None)
         self.key = key
         self.value = value
 class Device(Base):
@@ -69,3 +69,5 @@ class Alert(Base):
 
     def to_dict(self):
         return {"ts": self.ts.isoformat(), "severity": self.severity, "message": self.message, "meta": self.meta}
+# This file defines the database models used in the application.
+# It includes models for settings, devices, ports, traffic statistics, and alerts.
