@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Alerts</h2>
+  <div id="alerts"></div>
+</section>
+<script>
+async function loadAlerts(){
+  const r=await fetch('/api/alerts'); const data=await r.json();
+  document.getElementById('alerts').innerHTML = data.map(a=>`<div>• ${a.severity.toUpperCase()} — ${a.message} <small>${a.ts}</small></div>`).join('');
+}
+loadAlerts(); setInterval(loadAlerts,3000);
+</script>
+{% endblock %}

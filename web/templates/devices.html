@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Devices</h2>
+  <input type="text" id="q" placeholder="Search IP / hostname / MAC">
+  <table id="t"><thead><tr><th>IP</th><th>MAC</th><th>Hostname</th><th>Vendor</th><th>OS</th><th>Open Ports</th><th>Domains</th><th>Last Seen</th></tr></thead><tbody></tbody></table>
+</section>
+
+<div class="modal" id="domodal">
+  <div class="box">
+    <h3 id="domTitle">Recent domains</h3>
+    <div id="domList"></div>
+    <div style="text-align:right"><button class="btn" id="closeDom">Close</button></div>
+  </div>
+</div>
+
+<script>
+let all=[];
+function render(){
+  const q=(document.getElementById('q').value||'').toLowerCase();
+  const tb=document.querySelector('#t tbody');
+  tb.innerHTML = all.filter(d=>!q||(d.ip+(d.hostname||'')+(d.mac||'')).toLowerCase().includes(q))
+    .map(d=>{
+      const ports=(d.ports||[]).map(p=>`${p.port}/${p.proto} ${p.service||''} ${p.version||''}`).join(', ')||'-';
+      return `<tr data-ip="${d.ip}"><td>${d.ip}</td><td>${d.mac||'-'}</td><td>${d.hostname||'-'}</td><td>${d.vendor||'-'}</td><td>${d.os||'-'}</td><td>${ports}</td><td><button class="btn small" data-dom="${d.ip}">View</button></td><td>${d.last_seen}</td></tr>`;
+    }).join('');
+}
+async function load(){ const r=await fetch('/api/devices'); all=await r.json(); render(); }
+document.getElementById('q').addEventListener('input',render);
+document.addEventListener('click', async (e)=>{
+  if(e.target && e.target.dataset.dom){
+    const ip=e.target.dataset.dom;
+    const r=await fetch('/api/domains/'+encodeURIComponent(ip)); const data=await r.json();
+    document.getElementById('domTitle').innerText='Recent domains for '+ip;
+    document.getElementById('domList').innerHTML = data.length?('<ul>'+data.map(d=>`<li>${d.domain} <small>${d.ts}</small></li>`).join('')+'</ul>'):'<em>No DNS data yet</em>';
+    document.getElementById('domodal').classList.add('show');
+  }
+  if(e.target && e.target.id==='closeDom'){ document.getElementById('domodal').classList.remove('show'); }
+});
+load(); setInterval(load,5000);
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Top Talkers (by bytes)</h2>
+  <canvas id="chart"></canvas>
+</section>
+<script>
+let chart;
+async function loadTraffic(){
+  const r=await fetch('/api/traffic'); const data=await r.json();
+  const labels=data.map(x=>x.ip); const bytes=data.map(x=>x.bytes);
+  const ctx=document.getElementById('chart').getContext('2d');
+  if(!chart){
+    chart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Bytes',data:bytes}]},
+      options:{responsive:true,scales:{y:{beginAtZero:true}}}});
+  }else{ chart.data.labels=labels; chart.data.datasets[0].data=bytes; chart.update(); }
+}
+loadTraffic(); setInterval(loadTraffic,3000);
+</script>
+{% endblock %}

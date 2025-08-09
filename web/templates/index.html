@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Quick Actions</h2>
+  <div class="actions">
+    <button data-scan data-full="false">Sweep Subnet (Fast)</button>
+    <button data-scan data-full="true">Deep Scan (Ports + Versions)</button>
+    <input type="text" id="hostInput" placeholder="Target host or CIDR (optional)">
+  </div>
+  <p class="smol">Deep Scan needs Nmap installed. Fast sweep works without it.</p>
+</section>
+
+<section class="panel">
+  <h2>Recent Alerts</h2>
+  <div id="alerts"></div>
+</section>
+
+<script>
+async function loadAlerts(){
+  const r = await fetch('/api/alerts'); const data = await r.json();
+  document.getElementById('alerts').innerHTML = data.map(a=>`<div>• ${a.severity.toUpperCase()} — ${a.message} <small>${a.ts}</small></div>`).join('');
+}
+loadAlerts(); setInterval(loadAlerts, 4000);
+
+document.addEventListener('click', async (e) => {
+  if (e.target.matches('[data-scan]')) {
+    const full = e.target.getAttribute('data-full') === 'true';
+    const host = document.getElementById('hostInput').value || null;
+    const res = await fetch('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({host, full})});
+    const j = await res.json(); alert(j.msg || (j.ok?'OK':'Failed'));
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Wi‑Fi / LAN Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+</head>
+<body>
+  <header>
+    <h1>Wi‑Fi / LAN Monitor</h1>
+    <nav>
+      <a href="/">Overview</a>
+      <a href="/devices">Devices</a>
+      <a href="/traffic">Traffic</a>
+      <a href="/alerts">Alerts</a>
+    </nav>
+    <div class="controls">
+      <label>Interface: <select id="ifaceSelect"></select></label>
+    </div>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+<script>
+async function loadStatus(){
+  const r = await fetch('/api/status'); const s = await r.json();
+  const sel = document.getElementById('ifaceSelect');
+  sel.innerHTML = (s.adapters||[]).map(a=>`<option ${a.name===s.iface?'selected':''} value="${a.name}">${a.name} (${a.ipv4.join(', ')})</option>`).join('');
+}
+document.addEventListener('change', async (e)=>{
+  if(e.target.id==='ifaceSelect'){
+    await fetch('/api/set_iface',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({iface:e.target.value})});
+    setTimeout(()=>location.reload(), 800);
+  }
+});
+loadStatus();
+</script>
+</body>
+</html>
