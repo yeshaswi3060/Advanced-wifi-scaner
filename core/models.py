@@ -10,7 +10,7 @@ class Setting(Base):
     key = Column(String, unique=True, index=True)
     value = Column(String, nullable=True)
 
-    def __init__(self, key=None, value=None)
+    def __init__(self, key=None, value=None):
         self.key = key
         self.value = value
 class Device(Base):
